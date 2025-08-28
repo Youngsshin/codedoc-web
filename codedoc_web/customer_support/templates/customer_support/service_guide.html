@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}서비스 가이드 - CODEDOC{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'customer_support/css/service_guide.css' %}?v={{ STATIC_VERSION }}">
+{% endblock %}
+
+{% block content %}
+<!-- 페이지 헤더 -->
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">CODEDOC 서비스 가이드</h1>
+        <p class="page-subtitle">회원가입 후 나만을 위한 맞춤 서비스를 경험해보세요</p>
+    </div>
+</div>
+
+        {% comment %} <!-- 왜 CODEDOC인가요 -->
+        <section class="why-codedoc-section">
+            <div class="service-types">
+                <h2 class="section-title">왜 CODEDOC인가요?</h2>
+                
+                <div class="service-cards">
+                    <div class="service-text">
+                        <p class="text-description">
+                            <strong>CODEDOC</strong>은 수만 명의 실제 금융 정보로 학습한 인공지능이 개인의 나이, 소득뿐만 아니라 생활 패턴, 
+                            금융 목표, 투자 성향까지 꼼꼼히 분석하여 예금, 적금, 투자상품, 보험, 대출 등 주요 금융상품 중에서 
+                            나에게 딱 맞는 것들을 추천해주는 똑똑한 금융 서비스입니다.
+                        </p>
+                        <p class="text-description2">
+                            복잡한 금융 법률과 상품 정보를 정확하게 찾아주는 상담 챗봇과 개인별로 어떤 금융상품이 적합한지 
+                            예측해주는 시스템을 통해 전문 상담사 수준의 조언을 누구나 무료로 받을 수 있습니다.
+                        </p>
+
+                        <p class="text-description3">
+                            입력하신 모든 개인정보는 철저하게 보호되며, 
+                            오직 맞춤 추천을 위해서만 사용되고 다른 용도로는 절대 사용하지 않습니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section> {% endcomment %}
+
+<!-- 메인 콘텐츠 -->
+<div class="main-content">
+    <div class="container">
+        
+        <!-- 하이라이트 카드 -->
+        <section class="highlight-section">
+            <div class="highlight-card">
+                <div class="highlight-tag">핵심</div>
+                <h2 class="highlight-title">로그인하면 이렇게 달라져요!</h2>
+                <p class="highlight-description">
+                    회원가입만 해도 기본 맞춤 추천을 받을 수 있고, AI 챗봇과 대화하면 더욱 정확하고 구체적인 맞춤 상품 추천이 가능합니다.
+                </p>
+            </div>
+        </section>
+
+        <!-- 추천 시스템 -->
+        <section class="service-types">
+            {% comment %} <h2 class="section-title">맞춤 추천 시스템</h2> {% endcomment %}
+            
+            <div class="service-cards">
+                <div class="service-card">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0078FE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                    </div>
+                    <h3 class="card-title">회원가입을 하면</h3>
+                    <p class="card-description">
+                        나이, 직업, 소득 등 기본 정보로 <strong>기본 맞춤 추천</strong>을 받을 수 있어요. 상품 페이지에서 나에게 맞는 상품이 상단에 표시됩니다.
+                    </p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0078FE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                    </div>
+                    <h3 class="card-title">AI 챗봇 대화하면</h3>
+                    <p class="card-description">
+                        구체적인 목표와 상황을 AI에게 말씀해주시면 <strong>더 정확한 맞춤 추천</strong>을 받을 수 있어요. <br>"결혼 준비 중", "집 살 예정" 등 상황 반영!
+                    </p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0078FE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-upload">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    </div>
+                    <h3 class="card-title">지속적 업데이트</h3>
+                    <p class="card-description">
+                        시간이 지나 상황이 바뀌면 <strong>추천도 자동 업데이트</strong>! 이직, 결혼 등 변화하는 라이프스타일에 맞춰 새로운 추천을 받아보세요.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- CTA 섹션 -->
+        <section class="cta-section">
+            <div class="cta-content">
+                <p class="cta-subtitle">지금 회원가입하고 나만의 맞춤 금융 서비스를 경험해보세요</p>
+                <h2 class="cta-title">CODEDOC 서비스를 체험해보세요</h2>
+                
+                <div class="cta-buttons">
+                    <a href="{% url 'product_recommendation:product_list' %}" class="search-btn primary">맞춤 상품 보러가기</a>
+                    <a href="{% url 'product_recommendation:product_recommend' %}" class="search-btn secondary">내게 맞는 상품 찾기</a>
+                </div>
+            </div>
+        </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'customer_support/js/service_guide.js' %}"></script>
+{% endblock %}

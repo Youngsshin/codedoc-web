@@ -1,0 +1,249 @@
+/* ===============================
+    프로필 수정 페이지 전용 스타일
+   =============================== */
+
+.profile-edit-page-container {
+    min-height: calc(100vh - 65px - 150px);
+    padding: 85px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.profile-edit-card {
+    background: var(--bg-primary);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* 헤더 스타일 */
+.profile-edit-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 0;
+}
+
+.profile-edit-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+}
+
+.profile-edit-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 0;
+}
+
+/* 성공/에러 메시지 */
+.success-messages, .error-messages {
+    max-width: 800px;
+    margin: 0 auto 30px;
+    padding: 15px 20px;
+    border-radius: var(--border-radius-normal);
+    font-size: 14px;
+}
+
+.success-messages {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.error-messages {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.success-message, .error-message {
+    margin-bottom: 5px;
+}
+
+.success-message:last-child, .error-message:last-child {
+    margin-bottom: 0;
+}
+
+/* 폼 섹션 스타일 */
+.form-sections {
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+    margin: 0 auto;
+    padding: 0 40px;
+}
+
+.form-section {
+    background: white;
+    border-bottom: 1px solid #eee;
+    padding: 45px 0;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.section-header {
+    margin-bottom: 25px;
+}
+
+.section-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 폼 그리드 레이아웃 */
+.form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    max-width: 100%;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+/* 폼 그룹 스타일 */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+    margin-bottom: 8px;
+}
+
+/* .form-label::after {
+    content: " *";
+    color: #dc3545;
+    font-weight: normal;
+} */
+
+/* 폼 입력 요소들 */
+.profile-edit-form input,
+.profile-edit-form select {
+    width: 100%;
+    padding: 16px 18px;
+    border: 2px solid var(--border-light);
+    border-radius: var(--border-radius-normal);
+    font-size: 15px;
+    font-family: 'NanumSquare', sans-serif;
+    transition: all 0.3s ease;
+    outline: none;
+    background: var(--bg-primary);
+    box-sizing: border-box;
+    min-height: 54px;
+}
+
+.profile-edit-form input:focus,
+.profile-edit-form select:focus {
+    border-color: var(--primary-color);
+}
+
+.profile-edit-form input:hover,
+.profile-edit-form select:hover {
+    border-color: #bbb;
+}
+
+.profile-edit-form input[readonly] {
+    background-color: #f8f9fa;
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+.profile-edit-form select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+/* Placeholder 스타일 */
+.profile-edit-form input::placeholder {
+    color: #aaa;
+    font-style: italic;
+}
+
+/* 버튼 영역 */
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    padding: 40px 40px;
+}
+
+.save-button,
+.view-recommendations-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 36px;
+    border-radius: var(--border-radius-normal);
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-family: 'NanumSquare', sans-serif;
+    min-height: 54px;
+    box-sizing: border-box;
+}
+
+.save-button {
+    background: #ccc;  /* 초기 상태는 회색 */
+    color: white;
+    border: none;
+}
+
+.save-button.active {
+    background: var(--primary-color);  /* 변경사항 있을 때 파란색 */
+}
+
+.save-button.active:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow);
+}
+
+.save-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.view-recommendations-button {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-color: var(--border-light);
+}
+
+.view-recommendations-button:hover {
+    background: var(--text-secondary);
+    color: white;
+    border-color: var(--text-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}

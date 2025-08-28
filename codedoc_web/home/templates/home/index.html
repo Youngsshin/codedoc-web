@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}메인화면 - CODEDOC{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}?v={{ STATIC_VERSION }}">
+{% endblock %}
+
+{% block content %}
+<!-- car_banner.html -->
+<div class="banner-container">
+    <div class="content-wrapper">
+        <!-- 왼쪽 메인 슬라이드 영역 -->
+        <div class="main-slide">
+            <div class="slides-wrapper">
+                <!-- Slide 1 (파란색 - 챗봇) -->
+                <div class="slide-content slide-blue active">
+                    <div class="text-content">
+                        <div class="subtitle">AI 챗봇 서비스</div>
+                        <h1 class="main-title">
+                            언제든 <b>챗봇</b>에게 물어보세요<br>
+                            쉽고 빠른 <b>상담 서비스</b>
+                        </h1>
+                        <p class="description">24시간 고객을 위한 AI 상담 지원</p>
+                        <button class="cta-button" data-url="/chatbot/">챗봇 체험하기</button>
+                    </div>
+                </div>
+
+                <!-- Slide 2 (보라색 - 상품 추천) -->
+                <div class="slide-content slide-green">
+                    <div class="text-content">
+                        <div class="subtitle">AI 기반 맞춤형 금융상품 추천</div>
+                        <h1 class="main-title">
+                            나에게 딱 맞는 <b>금융상품</b>을<br>
+                            <b>AI</b>가 똑똑하게 찾아드려요
+                        </h1>
+                        <p class="description">머신러닝 기술로 개인 맞춤 추천!</p>
+                        <button class="cta-button" data-url="{% url 'product_recommendation:product_recommend' %}">상품 추천받기</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 슬라이드 컨트롤 -->
+            <div class="carousel-controls">
+                <div class="carousel-indicators">
+                    <span class="indicator active" data-slide="0"></span>
+                    <span class="indicator" data-slide="1"></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 오른쪽 섹션 -->
+        <div class="right-section">
+            <!-- 로그인 박스 -->
+            <div class="login-box">
+                {% if user.is_authenticated %}
+                    <!-- 로그인 상태일 때 -->
+                    <div class="user-welcome">
+                    <div class="welcome-message">
+                        <span>{{ user.full_name|default:user.username }}님, <br>오늘도 현명한 금융 관리 하세요!</span>
+                    </div>
+                    
+                    <div class="balance-info">
+                        <div class="balance-row">
+                            <span class="balance-label">이번 달 추천 상품</span>
+                            <span class="balance-period">3건</span>
+                        </div>
+                        
+                        <div class="balance-row">
+                            <span class="balance-label">AI 상담 이용 횟수</span>
+                            <span class="balance-amount">12회</span>
+                        </div>
+                        
+                        <div class="balance-row">
+                            <span class="balance-label">관심 금융상품</span>
+                            <span class="balance-amount">5개 등록</span>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                    <!-- 로그아웃 상태일 때 기존 코드 -->
+                    <div class="greeting">
+                        <span><b>로그인 후</b> 모든 서비스를 이용해보세요!</span>
+                    </div>
+                    <a href="{% url 'accounts:login' %}" class="login-a">
+                        <p class="login-button">로그인</p>
+                    </a>
+                    <div class="login-links">
+                        <a href="#" class="login-link">회원가입</a>
+                        <span class="separator">|</span>
+                        <a href="#" class="login-link">아이디찾기</a>
+                        <span class="separator">|</span>
+                        <a href="#" class="login-link">비밀번호찾기</a>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- 자주 찾는 메뉴 -->
+            <div class="frequent-menu">
+                <h3 class="menu-title">로그인 없이 이용 가능해요</h3>
+                <div class="menu-grid">
+                    <a href="{% url 'product_recommendation:product_recommend' %}">
+                        <div class="menu-item quik">
+                            <div class="menu-icon menu-icon-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            </div>
+                            <div class="menu-text">상품찾기</div>
+                        </div>
+                    </a>
+                    <a href="{% url 'news:news_list' %}">
+                        <div class="menu-item quik">
+                            <div class="menu-icon menu-icon-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-thumbs-up">
+                                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                                </svg>
+                            </div>
+                            <div class="menu-text">금융뉴스</div>
+                        </div>
+                    </a>
+                    <a href="{% url 'customer_support:service_guide' %}">
+                        <div class="menu-item quik">
+                            <div class="menu-icon menu-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                            </div>
+                            <div class="menu-text">서비스 가이드</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- financial_products.html -->
+<section class="financial-products-section">
+    <div class="container">
+        <div class="products-content">
+            <!-- 왼쪽 텍스트 섹션 -->
+            <div class="left-text-section">
+                <h2 class="main-text">고객님에게 꼭 맞는<br><b>맞춤 상품</b>을 찾아보세요.</h2>
+                <p class="sub-description">다양한 보증보험 상품으로 안전하고 신뢰할 수 있는<br>금융 솔루션을 제공합니다.</p>
+                <a href="{% url 'product_recommendation:product_list' %}" class="search-btn">
+                    자세히보기
+                </a>
+            </div>
+
+            <!-- 오른쪽 상품 슬라이드 섹션 -->
+            <div class="right-products-section">
+                <button class="slider-btn prev-btn" id="prevBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="products-slider">                    
+                    <div class="products-container" id="productsContainer">
+                        <div class="product-card active" data-category="savings">
+                            <div class="product-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0078FE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-database"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                            </div>
+                            <h3 class="product-title">예금</h3>
+                            <p class="product-description">
+                                예약 수수 후 납부하는 예약보증금 보장
+                            </p>
+                        </div>
+
+                        <div class="product-card" data-category="loan">
+                            <div class="product-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0078FE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-layers"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                                    <polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                            </div>
+                            <h3 class="product-title">적금</h3>
+                            <p class="product-description">
+                                계약 후 하차보수의무 불이행에 따른 손해 보장
+                            </p>
+                        </div>
+
+                        <div class="product-card" data-category="investment">
+                            <div class="product-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0078FE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-pie-chart">
+                                    <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                            </div>
+                            <h3 class="product-title">펀드</h3>
+                            <p class="product-description">
+                                법원의 담보제공명령 시 현금 대신 제출
+                            </p>
+                        </div>
+
+                        <div class="product-card" data-category="insurance">
+                            <div class="product-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0078FE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trending-up">
+                                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                            </div>
+                            <h3 class="product-title">주식</h3>
+                            <p class="product-description">
+                                계약이행의무 불이행에 따른 손해 보장
+                            </p>
+                        </div>
+
+                        <div class="product-card" data-category="insurance">
+                            <div class="product-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0078FE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-dollar-sign">
+                                    <line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                            </div>
+                            <h3 class="product-title">머니마켓펀드</h3>
+                            <p class="product-description">
+                                계약이행의무 불이행에 따른 손해 보장
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <button class="slider-btn next-btn" id="nextBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 기존 공지사항 섹션을 다음과 같이 수정 -->
+<section class="notice-section">
+    <div class="container">
+        <div class="notice-content">
+            <!-- 왼쪽 텍스트 섹션 -->
+            <div class="left-text-section">
+                <h2 class="main-text">언제나 최신 소식을<br><b>공지사항</b>에서 확인하세요.</h2>
+                <p class="sub-description">중요한 업데이트와 서비스 변경사항을<br>빠르게 전달해드립니다.</p>
+                <a href="{% url 'customer_support:notice_list' %}" class="search-btn">
+                    자세히보기
+                </a>
+            </div>
+            
+            <!-- 오른쪽 공지사항 목록 섹션 -->
+            <div class="right-notice-section">
+                <div class="notice-list-section">
+                    {% for notice in recent_notices %}
+                    <div class="notice-item-card" data-notice-id="{{ notice.id }}">
+                        <div class="notice-item-content">
+                            <h3 class="notice-item-title">{{ notice.title }}</h3>
+                            <span class="notice-item-date">{{ notice.created_at|date:"Y.m.d" }}</span>
+                        </div>
+                        <div class="notice-item-arrow">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <!-- 공지사항이 없을 때 표시할 내용 -->
+                    <div class="notice-item-card">
+                        <div class="notice-item-content">
+                            <h3 class="notice-item-title">등록된 공지사항이 없습니다.</h3>
+                            <span class="notice-item-date">-</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 챗봇 아이콘 추가 -->
+<div class="chatbot-container">
+    <button class="chatbot-btn" id="chatbotBtn">
+        <div class="chatbot-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M21 11.5C21.0034 12.8199 20.6951 14.1219 20.1 15.3C19.3944 16.7118 18.3098 17.8992 16.9674 18.7293C15.6251 19.5594 14.0782 19.9994 12.5 20C11.1801 20.0035 9.87812 19.6951 8.7 19.1L3 21L4.9 15.3C4.30493 14.1219 3.99656 12.8199 4 11.5C4.00061 9.92179 4.44061 8.37488 5.27072 7.03258C6.10083 5.69028 7.28825 4.6056 8.7 3.90003C9.87812 3.30496 11.1801 2.99659 12.5 3.00003H13C15.0843 3.11502 17.053 3.99479 18.5291 5.47089C20.0052 6.94699 20.885 8.91568 21 11V11.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+    </button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/script.js' %}"></script>
+{% endblock %}

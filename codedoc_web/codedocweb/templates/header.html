@@ -1,0 +1,83 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/ex.css' %}?v={{ STATIC_VERSION }}">
+
+<nav class="meritz-nav">
+    <div class="nav-container">
+        <!-- 로고 -->
+        <div class="nav-logo">
+            <a href="/">
+                <span class="logo-red">CODEDOC</span>
+            </a>
+        </div>
+
+        <!-- 메인 메뉴 (가운데) -->
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{% url 'product_recommendation:product_list' %}" class="nav-link">상품추천</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'news:news_list' %}" class="nav-link">금융정보</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'customer_support:service_guide' %}" class="nav-link">고객지원</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'customer_support:notice_list' %}" class="nav-link">공지사항</a>
+            </li>
+            <li class="nav-item">
+                {% if user.is_authenticated %}
+                    <a href="#" class="nav-link">마이페이지</a>
+                {% else %}
+                    <a href="#" class="nav-link">마이페이지</a>
+                {% endif %}
+            </li>
+        </ul>
+
+        <!-- 오른쪽 버튼들 - 로그인 상태에 따라 다르게 표시 -->
+        <div class="nav-buttons">
+            {% if user.is_authenticated %}
+                <!-- 로그인 상태 -->
+                <span class="user-greeting">{{ user.username }}님</span>
+                <a href="#" class="nav-mypage-btn">마이페이지</a>
+                <a href="{% url 'accounts:logout' %}" class="logout-btn">로그아웃</a>
+            {% else %}
+                <!-- 비로그인 상태 -->
+                <a href="{% url 'accounts:login' %}" class="nav-login-btn">로그인</a>
+                <a href="{% url 'accounts:signup' %}" class="signup-btn">회원가입</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 메가 드롭다운 -->
+    <div class="mega-dropdown">
+        <div class="dropdown-container">
+            <!-- 메뉴 컬럼들 -->
+            <div class="dropdown-columns">
+                <div class="menu-column">
+                    <a href="{% url 'product_recommendation:product_list' %}" class="menu-item">상품소개</a>
+                    <a href="{% url 'product_recommendation:product_recommend' %}" class="menu-item">내게맞는상품찾기</a>
+                </div>
+                
+                <div class="menu-column">
+                    <a href="{% url 'news:news_list' %}" class="menu-item">금융뉴스</a>
+                </div>
+                
+                <div class="menu-column">
+                    <a href="{% url 'customer_support:service_guide' %}" class="menu-item">서비스 가이드</a>
+                </div>
+                <div class="menu-column">
+                    <a href="{% url 'customer_support:notice_list' %}" class="menu-item">공지사항</a>
+                </div>
+                <div class="menu-column">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'accounts:profile' %}" class="menu-item">내 프로필 관리</a>
+                    {% else %}
+                        <a href="javascript:void(0);" class="menu-item" onclick="showLoginModal(); return false;">내 프로필 관리</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script src="{% static 'js/main.js' %}"></script>

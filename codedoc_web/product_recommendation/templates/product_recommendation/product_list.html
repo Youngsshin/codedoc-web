@@ -1,0 +1,717 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}상품소개 - CODEDOC{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'product_recommendation/css/product_list.css' %}?v={{ STATIC_VERSION }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- 페이지 헤더 -->
+    <div class="page-header">
+        <h1 class="page-title">무엇을 보장해 드릴까요?</h1>
+        <p class="page-subtitle">고객님께 맞는 최적의 금융상품을 찾아보세요</p>
+    </div>
+
+    <!-- 필터 탭 (6개로 확장) -->
+    <div class="filter-tabs">
+        <button class="filter-btn active" data-filter="all">전체</button>
+        <button class="filter-btn" data-filter="deposit">예금</button>
+        <button class="filter-btn" data-filter="saving">적금</button>
+        <button class="filter-btn" data-filter="fund">펀드</button>
+        <button class="filter-btn" data-filter="stock">주식</button>
+        <button class="filter-btn" data-filter="mmf">머니마켓펀드</button>
+    </div>
+
+    {% if error %}
+        <div class="error-message">
+            <h3>오류가 발생했습니다</h3>
+            <p>{{ error }}</p>
+        </div>
+    {% else %}
+        <!-- 전체 상품 섹션 -->
+        <div class="products-section" data-category="all">
+            <!-- 전체 카테고리 AI 추천 상품 섹션 -->
+            {% if recommended_products %}
+            <div class="recommendation-section category-recommendation">
+                <h3 class="section-subtitle">회원님을 위한 전체 AI 추천 상품 </h3>
+                <div class="products-grid">
+                    {% for product in recommended_products %}
+                        <div class="product-cards ai-recommended">
+                            <span class="product-badge recommended-badge">{{ product.product_type_name }}</span>
+                            <h4 class="product-name">{{ product.fin_prdt_nm }}</h4>
+                            <p class="product-subtitle">AI가 회원님의 프로필을 분석하여 추천하는 모든 카테고리의 맞춤 상품입니다.</p>
+                            
+                            <div class="product-info">
+                                <div class="info-label">금융회사</div>
+                                <div class="info-value">{{ product.kor_co_nm }}</div>
+                            </div>
+                            
+                            <div class="product-info">
+                                <div class="info-label">가입방법</div>
+                                <div class="info-value">{{ product.join_way|default:"온라인 가입 가능" }}</div>
+                            </div>
+                            
+                            {% if product.rate %}
+                            <div class="product-info">
+                                <div class="info-label">금리/수익률</div>
+                                <div class="info-value rate-highlight">{{ product.rate|floatformat:2 }}%</div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="product-tags">
+                                <!--<span class="tag">#AI추천</span>-->
+                                <span class="tag">#맞춤상품</span>
+                                <span class="tag">#전체추천</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            <h2 class="section-title">전체 {{ all_total }}개 상품</h2>
+            <div class="products-grid">
+                {% for product in all_products %}
+                    <div class="product-cards">
+                        <span class="product-badge">{{ product.product_type_name }}/보장</span>
+                        <h3 class="product-name">{{ product.fin_prdt_nm }}</h3>
+                        <p class="product-subtitle">
+                            {% if product.product_type == 'deposit' %}
+                                소중한 내 가족을 위한 현명한 선택!
+                            {% elif product.product_type == 'saving' %}
+                                세바를골고의 든든한 세가지 약속!
+                            {% elif product.product_type == 'fund' %}
+                                전문가가 운용하는 안정적인 투자!
+                            {% elif product.product_type == 'stock' %}
+                                성장 가능성 높은 우량 주식!
+                            {% elif product.product_type == 'mmf' %}
+                                언제든지 찾을 수 있는 안전한 투자!
+                            {% endif %}
+                        </p>
+                        
+                        <div class="product-info">
+                            <div class="info-label">상품 유형</div>
+                            <div class="info-value">{{ product.product_type_name }}</div>
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="info-label">
+                                {% if product.product_type == 'fund' or product.product_type == 'mmf' %}
+                                    자산운용사
+                                {% elif product.product_type == 'stock' %}
+                                    종목명
+                                {% else %}
+                                    금융회사
+                                {% endif %}
+                            </div>
+                            <div class="info-value">{{ product.kor_co_nm }}</div>
+                        </div>
+                        
+                        {% if product.product_type == 'stock' %}
+                            <div class="product-info">
+                                <div class="info-label">현재가</div>
+                                <div class="info-value rate-highlight">{{ product.current_price|floatformat:0 }}원</div>
+                            </div>
+                            <div class="product-info">
+                                <div class="info-label">등락률</div>
+                                <div class="info-value {% if product.change_rate >= 0 %}rate-positive{% else %}rate-negative{% endif %}">
+                                    {% if product.change_rate >= 0 %}+{% endif %}{{ product.change_rate|floatformat:2 }}%
+                                </div>
+                            </div>
+                        {% elif product.product_type == 'fund' or product.product_type == 'mmf' %}
+                            <div class="product-info">
+                                <div class="info-label">수익률</div>
+                                <div class="info-value rate-highlight">{{ product.return_rate|floatformat:2 }}%</div>
+                            </div>
+                            <div class="product-info">
+                                <div class="info-label">최소투자금액</div>
+                                <div class="info-value">{{ product.min_invest }}</div>
+                            </div>
+                        {% else %}
+                            <div class="product-info">
+                                <div class="info-label">가입방법</div>
+                                <div class="info-value">{{ product.join_way|default:"온라인 가입 가능" }}</div>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="product-tags">
+                            {% if product.product_type == 'deposit' %}
+                                <span class="tag">#보장</span>
+                                <span class="tag">#예금</span>
+                                <span class="tag">#안전</span>
+                            {% elif product.product_type == 'saving' %}
+                                <span class="tag">#성인우대혜택</span>
+                                <span class="tag">#적금</span>
+                                <span class="tag">#저축</span>
+                            {% elif product.product_type == 'fund' %}
+                                <span class="tag">#{{ product.fund_type }}</span>
+                                <span class="tag">#위험도{{ product.risk_level }}</span>
+                                <span class="tag">#전문운용</span>
+                            {% elif product.product_type == 'stock' %}
+                                <span class="tag">#{{ product.sector }}</span>
+                                <span class="tag">#{{ product.market_div }}</span>
+                                <span class="tag">#개별투자</span>
+                            {% elif product.product_type == 'mmf' %}
+                                <span class="tag">#단기금융</span>
+                                <span class="tag">#당일출금</span>
+                                <span class="tag">#안전투자</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>상품이 없습니다.</p>
+                {% endfor %}
+            </div>
+            
+            <!-- 전체 상품 페이지네이션 -->
+            {% if all_products.has_other_pages %}
+                <div class="pagination-container">
+                    <div class="pagination">
+                        {% if all_products.has_previous %}
+                            <a href="?page={{ all_products.previous_page_number }}">이전</a>
+                        {% endif %}
+                        
+                        {% for num in all_products_page_range %}
+                            {% if all_products.number == num %}
+                                <span class="current">{{ num }}</span>
+                            {% else %}
+                                <a href="?page={{ num }}">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if all_products.has_next %}
+                            <a href="?page={{ all_products.next_page_number }}">다음</a>
+                        {% endif %}
+                    </div>
+                    <div class="pagination-info">
+                        {{ all_products.start_index }}-{{ all_products.end_index }} / 총 {{ all_total }}개
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 예금 상품 섹션 -->
+        <div class="products-section" data-category="deposit" style="display: none;">
+            
+            
+            <!-- 예금 AI 추천 상품 섹션 -->
+            {% if recommended_deposit %}
+            <div class="recommendation-section category-recommendation">
+                <h3 class="section-subtitle">회원님을 위한 예금 AI 추천 상품 </h3>
+                <div class="products-grid">
+                    {% for product in recommended_deposit %}
+                        <div class="product-cards ai-recommended">
+                            <span class="product-badge recommended-badge">{{ product.product_type_name }}</span>
+                            <h4 class="product-name">{{ product.fin_prdt_nm }}</h4>
+                            <p class="product-subtitle">AI가 회원님의 프로필을 분석하여 추천하는 맞춤 예금상품입니다.</p>
+                            
+                            <div class="product-info">
+                                <div class="info-label">금융회사</div>
+                                <div class="info-value">{{ product.kor_co_nm }}</div>
+                            </div>
+                            
+                            <div class="product-info">
+                                <div class="info-label">가입방법</div>
+                                <div class="info-value">{{ product.join_way|default:"온라인 가입 가능" }}</div>
+                            </div>
+                            
+                            {% if product.rate %}
+                            <div class="product-info">
+                                <div class="info-label">금리</div>
+                                <div class="info-value rate-highlight">{{ product.rate|floatformat:2 }}%</div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="product-tags">
+                                <!--<span class="tag">#AI추천</span>-->
+                                <span class="tag">#맞춤상품</span>
+                                <span class="tag">#예금</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+            </div>
+            {% endif %}
+            <h2 class="section-title">예금 {{ deposits_total }}개 상품</h2>
+            <div class="products-grid">
+                {% for product in deposits %}
+                    <div class="product-cards">
+                        <span class="product-badge">예금/보장</span>
+                        <h3 class="product-name">{{ product.fin_prdt_nm }}</h3>
+                        <p class="product-subtitle">소중한 내 가족을 위한 현명한 선택!</p>
+                        
+                        <div class="product-info">
+                            <div class="info-label">금융회사</div>
+                            <div class="info-value">{{ product.kor_co_nm }}</div>
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="info-label">가입방법</div>
+                            <div class="info-value">{{ product.join_way|default:"온라인 가입 가능" }}</div>
+                        </div>
+                        
+                        <div class="product-tags">
+                            <span class="tag">#보장</span>
+                            <span class="tag">#예금</span>
+                            <span class="tag">#안전</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>예금 상품이 없습니다.</p>
+                {% endfor %}
+            </div>
+            
+            <!-- 예금 페이지네이션 -->
+            {% if deposits.has_other_pages %}
+                <div class="pagination-container">
+                    <div class="pagination">
+                        {% if deposits.has_previous %}
+                            <a href="?category=deposit&deposits_page={{ deposits.previous_page_number }}">이전</a>
+                        {% endif %}
+                        
+                        {% for num in deposits_page_range %}
+                            {% if deposits.number == num %}
+                                <span class="current">{{ num }}</span>
+                            {% else %}
+                                <a href="?category=deposit&deposits_page={{ num }}">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if deposits.has_next %}
+                            <a href="?category=deposit&deposits_page={{ deposits.next_page_number }}">다음</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 적금 상품 섹션 -->
+        <div class="products-section" data-category="saving" style="display: none;">
+            
+            
+            <!-- 적금 AI 추천 상품 섹션 -->
+            {% if recommended_saving %}
+            <div class="recommendation-section category-recommendation">
+                <h3 class="section-subtitle">회원님을 위한 적금 AI 추천 상품 </h3>
+                <div class="products-grid">
+                    {% for product in recommended_saving %}
+                        <div class="product-cards ai-recommended">
+                            <span class="product-badge recommended-badge">{{ product.product_type_name }}</span>
+                            <h4 class="product-name">{{ product.fin_prdt_nm }}</h4>
+                            <p class="product-subtitle">AI가 회원님의 프로필을 분석하여 추천하는 맞춤 적금상품입니다.</p>
+                            
+                            <div class="product-info">
+                                <div class="info-label">금융회사</div>
+                                <div class="info-value">{{ product.kor_co_nm }}</div>
+                            </div>
+                            
+                            <div class="product-info">
+                                <div class="info-label">가입방법</div>
+                                <div class="info-value">{{ product.join_way|default:"온라인 가입 가능" }}</div>
+                            </div>
+                            
+                            {% if product.rate %}
+                            <div class="product-info">
+                                <div class="info-label">금리</div>
+                                <div class="info-value rate-highlight">{{ product.rate|floatformat:2 }}%</div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="product-tags">
+                                <!--<span class="tag">#AI추천</span>-->
+                                <span class="tag">#맞춤상품</span>
+                                <span class="tag">#적금</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            <h2 class="section-title">적금 {{ savings_total }}개 상품</h2>
+            <div class="products-grid">
+                {% for product in savings %}
+                    <div class="product-cards">
+                        <span class="product-badge">적금/보장</span>
+                        <h3 class="product-name">{{ product.fin_prdt_nm }}</h3>
+                        <p class="product-subtitle">세바를골고의 든든한 세가지 약속!</p>
+                        
+                        <div class="product-info">
+                            <div class="info-label">금융회사</div>
+                            <div class="info-value">{{ product.kor_co_nm }}</div>
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="info-label">가입방법</div>
+                            <div class="info-value">{{ product.join_way|default:"온라인 가입 가능" }}</div>
+                        </div>
+                        
+                        <div class="product-tags">
+                            <span class="tag">#성인우대혜택</span>
+                            <span class="tag">#적금</span>
+                            <span class="tag">#저축</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>적금 상품이 없습니다.</p>
+                {% endfor %}
+            </div>
+            
+            <!-- 적금 페이지네이션 -->
+            {% if savings.has_other_pages %}
+                <div class="pagination-container">
+                    <div class="pagination">
+                        {% if savings.has_previous %}
+                            <a href="?category=saving&savings_page={{ savings.previous_page_number }}">이전</a>
+                        {% endif %}
+                        
+                        {% for num in savings_page_range %}
+                            {% if savings.number == num %}
+                                <span class="current">{{ num }}</span>
+                            {% else %}
+                                <a href="?category=saving&savings_page={{ num }}">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if savings.has_next %}
+                            <a href="?category=saving&savings_page={{ savings.next_page_number }}">다음</a>
+                        {% endif %}
+                    </div>
+                    <div class="pagination-info">
+                        {{ savings.start_index }}-{{ savings.end_index }} / 총 {{ savings_total }}개
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 펀드 상품 섹션 -->
+        <div class="products-section" data-category="fund" style="display: none;">
+            
+            
+            <!-- 펀드 AI 추천 상품 섹션 -->
+            {% if recommended_fund %}
+            <div class="recommendation-section category-recommendation">
+                <h3 class="section-subtitle">회원님을 위한 펀드 AI 추천 상품 </h3>
+                <div class="products-grid">
+                    {% for product in recommended_fund %}
+                        <div class="product-cards ai-recommended">
+                            <span class="product-badge recommended-badge">{{ product.product_type_name }}</span>
+                            <h4 class="product-name">{{ product.fin_prdt_nm }}</h4>
+                            <p class="product-subtitle">AI가 회원님의 프로필을 분석하여 추천하는 맞춤 펀드상품입니다.</p>
+                            
+                            <div class="product-info">
+                                <div class="info-label">자산운용사</div>
+                                <div class="info-value">{{ product.kor_co_nm }}</div>
+                            </div>
+                            
+                            <div class="product-info">
+                                <div class="info-label">가입방법</div>
+                                <div class="info-value">{{ product.join_way|default:"온라인 가입 가능" }}</div>
+                            </div>
+                            
+                            {% if product.rate %}
+                            <div class="product-info">
+                                <div class="info-label">수익률</div>
+                                <div class="info-value rate-highlight">{{ product.rate|floatformat:2 }}%</div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="product-tags">
+                                <!--<span class="tag">#AI추천</span>-->
+                                <span class="tag">#맞춤상품</span>
+                                <span class="tag">#펀드</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            <h2 class="section-title">펀드 {{ funds_total }}개 상품</h2>
+            <div class="products-grid">
+                {% for product in funds %}
+                    <div class="product-cards">
+                        <span class="product-badge">펀드/투자</span>
+                        <h3 class="product-name">{{ product.fin_prdt_nm }}</h3>
+                        <p class="product-subtitle">전문가가 운용하는 안정적인 투자!</p>
+                        
+                        <div class="product-info">
+                            <div class="info-label">자산운용사</div>
+                            <div class="info-value">{{ product.kor_co_nm }}</div>
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="info-label">펀드유형</div>
+                            <div class="info-value">{{ product.fund_type }}</div>
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="info-label">수익률(1년)</div>
+                            <div class="info-value rate-highlight">{{ product.return_rate|floatformat:2 }}%</div>
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="info-label">최소투자금액</div>
+                            <div class="info-value">{{ product.min_invest }}</div>
+                        </div>
+                        
+                        <div class="product-tags">
+                            <span class="tag">#{{ product.fund_type }}</span>
+                            <span class="tag">#위험도{{ product.risk_level }}</span>
+                            <span class="tag">#전문운용</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>펀드 상품이 없습니다.</p>
+                {% endfor %}
+            </div>
+            
+            <!-- 펀드 페이지네이션 -->
+            {% if funds.has_other_pages %}
+                <div class="pagination-container">
+                    <div class="pagination">
+                        {% if funds.has_previous %}
+                            <a href="?category=fund&funds_page={{ funds.previous_page_number }}">이전</a>
+                        {% endif %}
+                        
+                        {% for num in funds_page_range %}
+                            {% if funds.number == num %}
+                                <span class="current">{{ num }}</span>
+                            {% else %}
+                                <a href="?category=fund&funds_page={{ num }}">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if funds.has_next %}
+                            <a href="?category=fund&funds_page={{ funds.next_page_number }}">다음</a>
+                        {% endif %}
+                    </div>
+                    <div class="pagination-info">
+                        {{ funds.start_index }}-{{ funds.end_index }} / 총 {{ funds_total }}개
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 주식 상품 섹션 -->
+        <div class="products-section" data-category="stock" style="display: none;">
+            
+            
+            <!-- 주식 AI 추천 상품 섹션 -->
+            {% if recommended_stock %}
+            <div class="recommendation-section category-recommendation">
+                <h3 class="section-subtitle">회원님을 위한 주식 AI 추천 상품 </h3>
+                <div class="products-grid">
+                    {% for product in recommended_stock %}
+                        <div class="product-cards ai-recommended">
+                            <span class="product-badge recommended-badge">{{ product.product_type_name }}</span>
+                            <h4 class="product-name">{{ product.fin_prdt_nm }}</h4>
+                            <p class="product-subtitle">AI가 회원님의 프로필을 분석하여 추천하는 맞춤 주식입니다.</p>
+                            
+                            <div class="product-info">
+                                <div class="info-label">종목명</div>
+                                <div class="info-value">{{ product.kor_co_nm }}</div>
+                            </div>
+                            
+                            <div class="product-info">
+                                <div class="info-label">거래방법</div>
+                                <div class="info-value">{{ product.join_way|default:"온라인 거래 가능" }}</div>
+                            </div>
+                            
+                            {% if product.rate %}
+                            <div class="product-info">
+                                <div class="info-label">기대수익률</div>
+                                <div class="info-value rate-highlight">{{ product.rate|floatformat:2 }}%</div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="product-tags">
+                                <!--<span class="tag">#AI추천</span>-->
+                                <span class="tag">#맞춤상품</span>
+                                <span class="tag">#주식</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            <h2 class="section-title">주식 {{ stocks_total }}개 상품</h2>
+            <div class="products-grid">
+                {% for product in stocks %}
+                    <div class="product-cards">
+                        <span class="product-badge">주식/투자</span>
+                        <h3 class="product-name">{{ product.stock_nm }}</h3>
+                        <p class="product-subtitle">성장 가능성 높은 우량 주식!</p>
+                        
+                        <div class="product-info">
+                            <div class="info-label">종목코드</div>
+                            <div class="info-value">{{ product.stock_code }}</div>
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="info-label">업종</div>
+                            <div class="info-value">{{ product.sector }}</div>
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="info-label">현재가</div>
+                            <div class="info-value rate-highlight">{{ product.current_price|floatformat:0 }}원</div>
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="info-label">등락률</div>
+                            <div class="info-value {% if product.change_rate >= 0 %}rate-positive{% else %}rate-negative{% endif %}">
+                                {% if product.change_rate >= 0 %}+{% endif %}{{ product.change_rate|floatformat:2 }}%
+                            </div>
+                        </div>
+                        
+                        <div class="product-tags">
+                            <span class="tag">#{{ product.sector }}</span>
+                            <span class="tag">#{{ product.market_div }}</span>
+                            <span class="tag">#개별투자</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>주식 상품이 없습니다.</p>
+                {% endfor %}
+            </div>
+            
+            <!-- 주식 페이지네이션 -->
+            {% if stocks.has_other_pages %}
+                <div class="pagination-container">
+                    <div class="pagination">
+                        {% if stocks.has_previous %}
+                            <a href="?category=stock&stocks_page={{ stocks.previous_page_number }}">이전</a>
+                        {% endif %}
+                        
+                        {% for num in stocks_page_range %}
+                            {% if stocks.number == num %}
+                                <span class="current">{{ num }}</span>
+                            {% else %}
+                                <a href="?category=stock&stocks_page={{ num }}">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if stocks.has_next %}
+                            <a href="?category=stock&stocks_page={{ stocks.next_page_number }}">다음</a>
+                        {% endif %}
+                    </div>
+                    <div class="pagination-info">
+                        {{ stocks.start_index }}-{{ stocks.end_index }} / 총 {{ stocks_total }}개
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 머니마켓펀드 상품 섹션 -->
+        <div class="products-section" data-category="mmf" style="display: none;">
+            
+            
+            <!-- MMF AI 추천 상품 섹션 -->
+            {% if recommended_mmf %}
+            <div class="recommendation-section category-recommendation">
+                <h3 class="section-subtitle">회원님을 위한 머니마켓펀드 AI 추천 상품 </h3>
+                <div class="products-grid">
+                    {% for product in recommended_mmf %}
+                        <div class="product-cards ai-recommended">
+                            <span class="product-badge recommended-badge">{{ product.product_type_name }}</span>
+                            <h4 class="product-name">{{ product.fin_prdt_nm }}</h4>
+                            <p class="product-subtitle">AI가 회원님의 프로필을 분석하여 추천하는 맞춤 MMF 상품입니다.</p>
+                            
+                            <div class="product-info">
+                                <div class="info-label">자산운용사</div>
+                                <div class="info-value">{{ product.kor_co_nm }}</div>
+                            </div>
+                            
+                            <div class="product-info">
+                                <div class="info-label">가입방법</div>
+                                <div class="info-value">{{ product.join_way|default:"온라인 가입 가능" }}</div>
+                            </div>
+                            
+                            {% if product.rate %}
+                            <div class="product-info">
+                                <div class="info-label">수익률</div>
+                                <div class="info-value rate-highlight">{{ product.rate|floatformat:2 }}%</div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="product-tags">
+                                <!--<span class="tag">#AI추천</span>-->
+                                <span class="tag">#맞춤상품</span>
+                                <span class="tag">#MMF</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            <h2 class="section-title">머니마켓펀드 {{ mmf_total }}개 상품</h2>
+            <div class="products-grid">
+                {% for product in mmf_products %}
+                    <div class="product-cards">
+                        <span class="product-badge">MMF/투자</span>
+                        <h3 class="product-name">{{ product.fin_prdt_nm }}</h3>
+                        <p class="product-subtitle">언제든지 찾을 수 있는 안전한 투자!</p>
+                        
+                        <div class="product-info">
+                            <div class="info-label">자산운용사</div>
+                            <div class="info-value">{{ product.kor_co_nm }}</div>
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="info-label">유동성</div>
+                            <div class="info-value">{{ product.liquidity }}</div>
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="info-label">수익률(7일)</div>
+                            <div class="info-value rate-highlight">{{ product.return_rate|floatformat:2 }}%</div>
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="info-label">최소투자금액</div>
+                            <div class="info-value">{{ product.min_invest }}</div>
+                        </div>
+                        
+                        <div class="product-tags">
+                            <span class="tag">#단기금융</span>
+                            <span class="tag">#당일출금</span>
+                            <span class="tag">#안전투자</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>머니마켓펀드 상품이 없습니다.</p>
+                {% endfor %}
+            </div>
+            
+            <!-- 머니마켓펀드 페이지네이션 -->
+            {% if mmf_products.has_other_pages %}
+                <div class="pagination-container">
+                    <div class="pagination">
+                        {% if mmf_products.has_previous %}
+                            <a href="?category=mmf&mmf_page={{ mmf_products.previous_page_number }}">이전</a>
+                        {% endif %}
+                        
+                        {% for num in mmf_page_range %}
+                            {% if mmf_products.number == num %}
+                                <span class="current">{{ num }}</span>
+                            {% else %}
+                                <a href="?category=mmf&mmf_page={{ num }}">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if mmf_products.has_next %}
+                            <a href="?category=mmf&mmf_page={{ mmf_products.next_page_number }}">다음</a>
+                        {% endif %}
+                    </div>
+                    <div class="pagination-info">
+                        {{ mmf_products.start_index }}-{{ mmf_products.end_index }} / 총 {{ mmf_total }}개
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<script src="{% static 'product_recommendation/js/product_list.js' %}"></script>
+{% endblock %}

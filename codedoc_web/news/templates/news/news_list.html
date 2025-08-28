@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}금융 뉴스 - CODEDOC{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'news/css/news_list.css' %}?v={{ STATIC_VERSION }}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="news-container">
+    <!-- 페이지 헤더 -->
+    <div class="news-header">
+        <div class="page-header">
+            <h1 class="page-title">실시간 금융 뉴스</h1>
+            <p class="page-subtitle">최신 금융 동향과 시장 소식을 빠르게 확인하세요</p>
+        </div>
+    </div>
+
+    <!-- 검색 및 탭 영역 -->
+    <div class="search-section">
+        <form method="GET" id="newsFilterForm">
+            <div class="search-bar">
+                <!-- 카테고리 드롭다운 -->
+                <div class="category-dropdown">
+                    <select name="category" class="category-select" onchange="this.form.submit()">
+                        <option value="all" {% if not current_category or current_category == 'all' %}selected{% endif %}>전체</option>
+                        {% for category_code, category_name in categories %}
+                            <option value="{{ category_code }}" {% if current_category == category_code %}selected{% endif %}>{{ category_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <svg class="dropdown-arrow" width="17" height="17" viewBox="0 0 24 24">
+                        <path d="M7 10l5 5 5-5z" fill="currentColor"/>
+                    </svg>
+                </div>
+                
+                <!-- 검색 입력창 -->
+                <input type="text" placeholder="검색어를 입력해주세요" class="search-input" name="search" value="{{ current_search|default:'' }}">
+                <button type="submit" class="news-search-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <circle cx="11" cy="11" r="8" stroke="white" stroke-width="2"/>
+                        <path d="m21 21-4.35-4.35" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 뉴스 목록 -->
+    <div class="news-content-list">
+        <div class="news-stats">
+            <span class="total-count">총 {{ total_count }}건</span>
+        </div>
+
+        <div class="news-list">
+            {% for news in page_obj %}
+                <div class="news-item">
+                    <div class="news-main">
+                        <h3 class="news-title">
+                            <a href="{{ news.link }}" target="_blank">
+                                {{ news.title }}
+                            </a>
+                        </h3>
+                        <span class="news-date">{{ news.pub_date }}</span>
+                    </div>
+                    <div class="news-arrow">
+                        <span>›</span>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="no-news">
+                    <p>등록된 뉴스가 없습니다.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- 페이지네이션 -->
+        {% if page_obj.has_other_pages %}
+            <div class="pagination-container">
+                <div class="pagination">
+                    <!-- 이전 10개 구간 -->
+                    {% if page_obj.paginator.page_range.0 > 1 %}
+                        <a href="?page={{ page_obj.paginator.page_range.0|add:'-10' }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}">이전</a>
+                    {% endif %}
+                    
+                    <!-- 페이지 번호들 (10개 단위 고정) -->
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="current">{{ num }}</span>
+                        {% else %}
+                            <a href="?page={{ num }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <!-- 다음 10개 구간 -->
+                    {% if page_obj.paginator.page_range|last < page_obj.paginator.num_pages %}
+                        <a href="?page={{ page_obj.paginator.page_range|last|add:'1' }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}">다음</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'news/js/news_list.js' %}"></script>
+{% endblock %}

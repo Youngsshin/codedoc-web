@@ -1,0 +1,564 @@
+import json
+import numpy as np
+import joblib
+import re
+import os
+from typing import Dict, List, Optional
+from functools import lru_cache
+import threading
+
+class HighPerformanceFinancialRecommender:
+    """고성능 금융상품 추천 시스템"""
+    
+    def __init__(self):
+        import os
+        
+        print("== 고성능 금융상품 추천 시스템 초기화 중...==")
+        
+        # Django 앱 내 파일 경로 설정
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        model_file = os.path.join(current_dir, 'multilabel_lgbm.joblib')
+        
+        print(f" Django 앱 디렉토리: {current_dir}")
+        print(f" 모델 파일 경로: {model_file}")
+        print(f" 모델 파일 존재: {' 존재' if os.path.exists(model_file) else ' 없음'}")
+        
+        # 모델 로드
+        self.model = None
+        try:
+            print(f" 모델 로드 시도중...")
+            self.model = joblib.load(model_file)
+            print(f" LGBM 모델 로드 성공!")
+        except Exception as e:
+            print(f" 모델 로드 실패: {e}")
+            print(f" 에러 상세: {type(e).__name__}")
+        
+        # 데이터 로드 및 전처리
+        print(f" 데이터 로드 시작...")
+        self.products = self._load_products()
+        print(f" 데이터 로드 완료: {sum(len(v) for v in self.products.values())}개 상품")
+        self._precompute_product_features()
+        
+        # 캐시 초기화
+        self._recommendation_cache = {}
+        self._cache_lock = threading.Lock()
+    
+    def _load_products(self):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        """상품 데이터 로드 - 병렬 처리"""
+        products = {}
+        
+        # Django 앱 내 data 폴더 경로
+        data_path = os.path.join(current_dir, 'data')
+        
+        files = {
+            'funds': os.path.join(data_path, 'funds.json'),
+            'stocks': os.path.join(data_path, 'stocks.json'),
+            'mmf': os.path.join(data_path, 'money_market_funds.json'),
+            'deposit': os.path.join(data_path, 'bank_deposits.json'),
+            'saving': os.path.join(data_path, 'bank_savings.json')
+        }
+        
+        print(f" 데이터 폴더 경로: {data_path}")
+        print(f" 데이터 폴더 존재: {' 존재' if os.path.exists(data_path) else ' 없음'}")
+        
+        # 각 파일 존재 여부 확인
+        for category, filepath in files.items():
+            exists = os.path.exists(filepath)
+            print(f" {category} 파일: {filepath} -> {' 존재' if exists else ' 없음'}")
+        
+        # 간단한 단일 스레드 로드
+        for category, filepath in files.items():
+            try:
+                print(f" {category} 로드 시도: {filepath}")
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                parsed_products = self._parse_product_data(data, category)
+                products[category] = parsed_products
+                print(f" {category} 로드 성공: {len(parsed_products)}개 상품")
+            except Exception as e:
+                print(f" {category} 로드 실패: {e}")
+                products[category] = []
+        
+        return products
+    
+    def _parse_product_data(self, data, category):
+        """JSON 데이터 파싱 - 최적화"""
+        try:
+            base_list = data['result']['baseList']
+            option_list = data['result']['optionList']
+            
+            # 벡터화된 연산을 위한 딕셔너리 최적화
+            rates = {}
+            is_investment = category in {'funds', 'stocks'}  # 투자상품 (수익률 기준)
+            is_mmf = category == 'mmf'  # MMF (특별 처리)
+            
+            # 옵션 데이터 빠른 처리
+            for option in option_list:
+                product_id = option.get('fin_prdt_cd') or option.get('stock_code')
+                if not product_id:
+                    continue
+                
+                rate = None
+                if category == 'funds':
+                    rate = option.get('return_rate')
+                elif category == 'stocks':
+                    rate = option.get('change_rate')  # 등락률
+                elif category == 'mmf':
+                    rate = option.get('return_rate') or option.get('yield_today')
+                else:  # 예금, 적금
+                    rate = option.get('intr_rate2') or option.get('intr_rate')
+                
+                if rate is not None:
+                    rate = float(rate)
+                    if product_id not in rates:
+                        rates[product_id] = rate
+                    else:
+                        # 투자상품은 최고수익률, 예적금은 최고금리
+                        rates[product_id] = max(rates[product_id], rate)
+            
+            # 상품 정보 통합 - 리스트 컴프리헨션으로 최적화
+            products = []
+            for product in base_list:
+                product_id = product.get('fin_prdt_cd') or product.get('stock_code')
+                if product_id in rates:
+                    if category == 'funds':
+                        features = f"펀드유형: {product.get('fund_type', '')}, 위험등급: {product.get('risk_level', '')}"
+                        max_limit = product.get('min_invest', '')
+                        is_investment_product = True
+                    elif category == 'stocks':
+                        features = f"센터: {product.get('sector', '')}, 시가총액: {product.get('market_cap', '')}"
+                        max_limit = "주가에 따라 결정"
+                        is_investment_product = True
+                    elif category == 'mmf':
+                        features = f"유동성: {product.get('liquidity', '')}, 위험등급: {product.get('risk_level', '')}"
+                        max_limit = product.get('min_invest', '')
+                        is_investment_product = False
+                    else:
+                        features = product.get('spcl_cnd', '')
+                        max_limit = product.get('max_limit', '')
+                        is_investment_product = False
+                    
+                    # 상품명 및 회사명 처리
+                    product_name = product.get('fin_prdt_nm') or product.get('stock_nm', '')
+                    company_name = product.get('kor_co_nm', '')
+                    
+                    products.append({
+                        'name': product_name,
+                        'bank': company_name,
+                        'rate': rates[product_id],
+                        'is_loan': False,  # 대출 상품이 없으므로 모두 False
+                        'is_investment': is_investment_product,
+                        'join_way': product.get('join_way', '영업점'),
+                        'features': features,
+                        'max_limit': max_limit,
+                        'product_id': product_id
+                    })
+            
+            # 정렬 최적화 - 투자상품은 수익률 내림차순, 예적금은 금리 내림차순
+            return sorted(products, key=lambda x: x['rate'], reverse=True)
+            
+        except Exception as e:
+            print(f"파싱 오류: {e}")
+            return []
+    
+    def _precompute_product_features(self):
+        """상품 특성 사전 계산으로 성능 향상"""
+        print(" 상품 특성 사전 계산 중...")
+        
+        # 키워드 매핑 사전 정의
+        self.keyword_mappings = {
+            'term_keywords': {
+                'long_term': ['5년', '장기', '미래', '10년'],
+                'medium_term': ['3년', '4년', '중기'],
+                'short_term': ['1년', '2년', '단기', '6개월']
+            },
+            'target_keywords': {
+                'youth': ['청년', 'MZ', '20대', '30대', '젊은'],
+                'premium': ['프리미엄', 'VIP', '골드', '특별', 'GOLD'],
+                'simple': ['자유', '간편', '생활', '시작', '기본'],
+                'family': ['가족', '부부', '신혼', '패밀리']
+            }
+        }
+        
+        # 각 상품별 특성 사전 계산
+        for category in self.products:
+            for product in self.products[category]:
+                name_lower = product['name'].lower()
+                features_lower = product['features'].lower()
+                text = f"{name_lower} {features_lower}"
+                
+                # 기간별 특성
+                product['term_type'] = 'medium_term'  # 기본값
+                for term_type, keywords in self.keyword_mappings['term_keywords'].items():
+                    if any(keyword in text for keyword in keywords):
+                        product['term_type'] = term_type
+                        break
+                
+                # 타겟별 특성
+                product['target_type'] = 'general'  # 기본값
+                for target_type, keywords in self.keyword_mappings['target_keywords'].items():
+                    if any(keyword in text for keyword in keywords):
+                        product['target_type'] = target_type
+                        break
+                
+                # 금리 등급 사전 계산
+                rate = product['rate']
+                if product.get('is_investment', False):  # 투자상품 (펀드, 주식)
+                    if rate >= 10.0:
+                        product['rate_grade'] = 'excellent'
+                    elif rate >= 5.0:
+                        product['rate_grade'] = 'good'
+                    elif rate >= 0.0:
+                        product['rate_grade'] = 'average'
+                    else:
+                        product['rate_grade'] = 'low'
+                else:  # 예적금, MMF
+                    if rate >= 4.0:
+                        product['rate_grade'] = 'excellent'
+                    elif rate >= 3.0:
+                        product['rate_grade'] = 'good'
+                    elif rate >= 2.0:
+                        product['rate_grade'] = 'average'
+                    else:
+                        product['rate_grade'] = 'low'
+        
+        print(" 특성 계산 완료!")
+    
+    @lru_cache(maxsize=1000)
+    def parse_input(self, user_input):
+        """사용자 입력 파싱 - 캐싱으로 성능 향상"""
+        result = {}
+        user_input_lower = user_input.lower()
+        
+        # 정규식 컴파일된 패턴 사용
+        age_pattern = re.compile(r'(\d{1,2})살|(\d{1,2})세|(\d{2})대')
+        age_match = age_pattern.search(user_input)
+        if age_match:
+            if age_match.group(3):  # 20대, 30대 등
+                result['age'] = int(age_match.group(3)) + 5
+            else:
+                result['age'] = int(age_match.group(1) or age_match.group(2))
+        
+        # 소득 패턴들을 한 번에 처리
+        income_patterns = [
+            (re.compile(r'월급.*?(\d+)만'), 1),
+            (re.compile(r'월.*?(\d+)만'), 1),
+            (re.compile(r'연봉.*?(\d+)만'), 12),
+            (re.compile(r'소득.*?(\d+)만'), 1),
+            (re.compile(r'세전.*?(\d+)'), 1)  # 세전 400 등
+        ]
+        
+        for pattern, divisor in income_patterns:
+            income_match = pattern.search(user_input)
+            if income_match:
+                income_value = int(income_match.group(1))
+                if divisor == 12:  # 연봉의 경우
+                    result['monthly_income'] = income_value // 12
+                else:
+                    result['monthly_income'] = income_value
+                break
+        
+        # 성별 판단
+        if any(word in user_input for word in ['남자', '남성']):
+            result['gender'] = 'male'
+        elif any(word in user_input for word in ['여자', '여성']):
+            result['gender'] = 'female'
+        
+        # 결혼 여부 판단 개선 - 더 정확한 키워드 매칭
+        married_keywords = ['기혼', '부부', '신혼부부', '아내', '남편', '배우자']
+        unmarried_keywords = ['미혼', '독신', '솔로']
+        
+        # 미혼 키워드가 명시적으로 있는 경우
+        if any(word in user_input for word in unmarried_keywords):
+            result['married'] = False
+        # 기혼 키워드가 명시적으로 있는 경우
+        elif any(word in user_input for word in married_keywords):
+            result['married'] = True
+        # '결혼준비', '결혼자금' 등은 미혼으로 판단
+        elif '결혼준비' in user_input or '결혼자금' in user_input or '결혼자금' in user_input:
+            result['married'] = False
+        
+        # 목적 추출 - 우선순위 기반 (더 정확한 키워드)
+        purpose_keywords = [
+            ('funds', ['펀드', '투자신탁', '자산운용', '포트폴리오']),
+            ('stocks', ['주식', '주식투자', '주식매수', '주식매매', '주식시장', '종목', '상장', '코스피', '코스닥']),
+            ('saving', ['적금', '저축', '모으기']),
+            ('deposit', ['예금', '예치']),
+            ('mmf', ['MMF', '머니마켓펀드', '단기금융', '현금관리']),
+            ('investment', ['투자', '재테크'])
+        ]
+        
+        for purpose, keywords in purpose_keywords:
+            if any(keyword in user_input for keyword in keywords):
+                result['purpose'] = purpose
+                break
+        
+        print(f"파싱 결과: {result}")
+        return tuple(sorted(result.items()))  # 튜플로 변환하여 캐싱 가능
+    
+    def _calculate_advanced_score(self, product, age, income, purpose, married=False):
+        """고급 점수 계산 알고리즘"""
+        score = 40  # 기본 점수
+        
+        # 1. 나이별 맞춤 점수
+        age_score = 0
+        if purpose == 'saving':
+            if age <= 30:
+                if product['term_type'] == 'long_term':
+                    age_score = 25
+                elif product['term_type'] == 'medium_term':
+                    age_score = 15
+                else:
+                    age_score = 5
+            elif age <= 40:
+                if product['term_type'] == 'medium_term':
+                    age_score = 20
+                elif product['term_type'] == 'long_term':
+                    age_score = 15
+                else:
+                    age_score = 10
+            else:
+                if product['term_type'] == 'short_term':
+                    age_score = 20
+                elif product['term_type'] == 'medium_term':
+                    age_score = 12
+                else:
+                    age_score = 5
+        
+        # 2. 소득별 맞춤 점수
+        income_score = 0
+        if income >= 500:
+            if product['target_type'] == 'premium':
+                income_score = 20
+            else:
+                income_score = 10
+        elif income >= 300:
+            income_score = 15
+        elif income > 0:
+            if product['target_type'] == 'simple':
+                income_score = 15
+            else:
+                income_score = 8
+        else:
+            income_score = 12
+        
+        # 3. 금리 점수
+        rate = product['rate']
+        if product['is_loan']:
+            if rate <= 3.0:
+                rate_score = 20
+            elif rate <= 4.0:
+                rate_score = 15
+            elif rate <= 5.0:
+                rate_score = 10
+            else:
+                rate_score = 5
+        else:
+            if rate >= 6.0:
+                rate_score = 20
+            elif rate >= 5.0:
+                rate_score = 15
+            elif rate >= 4.0:
+                rate_score = 10
+            elif rate >= 3.0:
+                rate_score = 8
+            else:
+                rate_score = 5
+        
+        # 4. 특화 보너스
+        bonus_score = 0
+        
+        if age <= 35 and product['target_type'] == 'youth':
+            bonus_score += 10
+        elif married and product['target_type'] == 'family':
+            bonus_score += 8
+        
+        if age <= 40 and '스마트폰' in product['join_way']:
+            bonus_score += 3
+        elif age > 40 and '영업점' in product['join_way']:
+            bonus_score += 3
+        
+        major_banks = ['국민은행', '신한은행', '하나은행', '우리은행']
+        if any(bank in product['bank'] for bank in major_banks):
+            bonus_score += 5
+        
+        total_score = score + age_score + income_score + rate_score + bonus_score
+        return min(total_score, 100)
+    
+    def _customize_products_advanced(self, products, user_profile):
+        """고급 상품 맞춤화"""
+        age = user_profile.get('age', 30)
+        income = user_profile.get('monthly_income', 300)
+        purpose = user_profile.get('purpose', 'general')
+        married = user_profile.get('married', False)
+        
+        scored_products = []
+        for product in products:
+            score = self._calculate_advanced_score(product, age, income, purpose, married)
+            
+            product_copy = product.copy()
+            product_copy['score'] = score
+            scored_products.append(product_copy)
+        
+        return sorted(scored_products, 
+                     key=lambda x: (x['score'], 
+                                   -x['rate'] if not x['is_loan'] else x['rate'],
+                                   x['bank']), 
+                     reverse=True)
+    
+    def recommend(self, user_input, top_n=5):
+        """고성능 상품 추천"""
+        parsed_tuple = self.parse_input(user_input)
+        parsed = dict(parsed_tuple)
+        
+        cache_key = (parsed_tuple, top_n)
+        
+        with self._cache_lock:
+            if cache_key in self._recommendation_cache:
+                print("캐시에서 결과 반환")
+                cached_result = self._recommendation_cache[cache_key].copy()
+                cached_result['user_info'] = parsed
+                return cached_result
+        
+        purpose = parsed.get('purpose', 'general')
+        
+        # 목적에 따른 상품 선택 (더 많은 상품을 포함하도록 개선)
+        if purpose == 'funds':
+            base_products = self.products.get('funds', [])[:10]  # 더 많은 후보 상품
+        elif purpose == 'stocks':
+            base_products = self.products.get('stocks', [])[:10]
+        elif purpose == 'mmf':
+            base_products = self.products.get('mmf', [])[:10]
+        elif purpose == 'deposit':
+            base_products = self.products.get('deposit', [])[:10]
+        elif purpose == 'saving':
+            base_products = self.products.get('saving', [])[:10]
+        elif purpose == 'investment':
+            # 투자 목적일 때 다양한 상품 포함
+            base_products = (
+                self.products.get('funds', [])[:4] + 
+                self.products.get('stocks', [])[:3] + 
+                self.products.get('mmf', [])[:3]
+            )
+        else:
+            # 기본적으로 다양한 카테고리 제공
+            base_products = (
+                self.products.get('saving', [])[:3] + 
+                self.products.get('deposit', [])[:2] + 
+                self.products.get('funds', [])[:2] + 
+                self.products.get('mmf', [])[:2] + 
+                self.products.get('stocks', [])[:1]
+            )
+        
+        customized_products = self._customize_products_advanced(base_products, parsed)
+        
+        recommendation_reason = self._generate_recommendation_reason(parsed, customized_products[0] if customized_products else None)
+        
+        result = {
+            'products': customized_products[:top_n],
+            'recommendation_reason': recommendation_reason,
+            'total_candidates': len(base_products)
+        }
+        
+        with self._cache_lock:
+            if len(self._recommendation_cache) > 100:
+                oldest_key = next(iter(self._recommendation_cache))
+                del self._recommendation_cache[oldest_key]
+            self._recommendation_cache[cache_key] = result.copy()
+        
+        result['user_info'] = parsed
+        return result
+    
+    def _generate_recommendation_reason(self, user_info, top_product):
+        """추천 이유 생성"""
+        reasons = []
+        age = user_info.get('age', 30)
+        income = user_info.get('monthly_income', 300)
+        purpose = user_info.get('purpose', 'general')
+        married = user_info.get('married')
+        gender = user_info.get('gender')
+        
+        if age <= 30:
+            if purpose in ['saving', 'deposit']:
+                reasons.append("젊은 연령대로 장기 자산 형성에 유리")
+            elif purpose in ['funds', 'stocks']:
+                reasons.append("청년층으로 적극적인 투자 기회")
+        elif age <= 40:
+            if purpose in ['saving', 'deposit']:
+                reasons.append("안정적인 생애 계획 단계로 중기 자산 관리 적합")
+            elif purpose in ['funds', 'stocks']:
+                reasons.append("중년층으로 안정적인 포트폴리오 구성")
+        else:
+            reasons.append("안정적인 중장년층으로 안전한 상품 추천")
+        
+        if income >= 500:
+            reasons.append("고소득으로 프리미엄 상품 이용 가능")
+        elif income >= 300:
+            reasons.append("안정적인 소득으로 안정적인 금융상품 이용 가능")
+        elif income > 0:
+            reasons.append("소득 수준에 맞는 적절한 상품 선별")
+        
+        if married == False:
+            if purpose in ['funds', 'stocks']:
+                reasons.append("미혼으로 적극적인 투자로 자산 증식 기회")
+            elif purpose in ['saving', 'deposit', 'mmf']:
+                reasons.append("미혼으로 미래 준비를 위한 자산 형성")
+        elif married == True:
+            if purpose in ['funds', 'stocks']:
+                reasons.append("기혼 가정으로 안정적인 포트폴리오 구성")
+            elif purpose in ['saving', 'deposit', 'mmf']:
+                reasons.append("가족을 위한 안정적인 자산 관리")
+        
+        if purpose == 'funds':
+            reasons.append("펀드 투자로 수익성과 안정성 균형")
+        elif purpose == 'stocks':
+            reasons.append("주식 투자로 높은 수익 기대")
+        elif purpose == 'mmf':
+            reasons.append("단기금융 상품으로 유동성과 안전성 중시")
+        elif purpose == 'saving':
+            reasons.append("착실한 저축 습관 형성에 적합")
+        elif purpose == 'deposit':
+            reasons.append("안전한 예금 상품으로 안정성 중시")
+        
+        if top_product:
+            if top_product['rate_grade'] == 'excellent':
+                if top_product['is_loan']:
+                    reasons.append("최저 금리 대출 상품")
+                else:
+                    reasons.append("최고 금리 예적금 상품")
+            elif top_product['rate_grade'] == 'good':
+                reasons.append("우수한 금리 조건 제공")
+        
+        return " | ".join(reasons) if reasons else "고객님 상황에 최적화된 상품 추천"
+
+def main():
+    """메인 실행"""
+    recommender = HighPerformanceFinancialRecommender()
+    
+    print("\n=== 고성능 금융상품 추천 시스템 준비 완료 ===")
+    print("팁: 나이, 소득, 목적을 함께 입력하면 더 정확한 추천을 받을 수 있습니다.")
+    print("예시: '30대 남성이고 월급 400만원인데 적금 추천해줘'")
+    
+    while True:
+        user_input = input("\n어떤 금융상품을 찾고 계신가요? (종료: quit): ")
+        
+        if user_input.lower() == 'quit':
+            break
+            
+        import time
+        start_time = time.time()
+        
+        result = recommender.recommend(user_input)
+        
+        end_time = time.time()
+        
+        print(f"\n처리시간: {(end_time - start_time)*1000:.1f}ms")
+        
+        continue_choice = input("\n다른 상품을 더 찾아보시겠습니까? (예/아니오): ").strip().lower()
+        if continue_choice in ['아니오', 'n', 'no', '아니요']:
+            print("\n금융상품 추천 시스템을 종료합니다. 감사합니다!")
+            return
+
+if __name__ == "__main__":
+    main()
