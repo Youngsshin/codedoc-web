@@ -1,0 +1,352 @@
+/* customer_support/static/customer_support/css/service_guide.css */
+
+/* 기본 스타일 */
+.container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* 페이지 헤더 */
+.page-header {
+    background: var(--bg-primary);
+    padding: 85px 0 0px;
+    text-align: center;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 15px;
+    letter-spacing: -0.05rem;
+}
+
+.page-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* 메인 콘텐츠 */
+.main-content {
+    padding: 60px 0 0px;
+}
+
+/* 하이라이트 섹션 */
+.highlight-section {
+    margin-bottom: 60px;
+}
+
+.highlight-card {
+    background: var(--bg-primary);
+    border: 2px solid var(--primary-color);
+    border-radius: var(--border-radius-normal);
+    padding: 30px;
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.highlight-tag {
+    background: var(--primary-color);
+    color: var(--bg-primary);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 15px;
+}
+
+.highlight-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 15px;
+}
+
+.highlight-description {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* 섹션 타이틀 */
+.section-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.why-codedoc-section{
+    background: #e7f2ff;
+    padding: 60px 0;
+}
+
+/* 서비스 유형 섹션 */
+.service-types {
+    margin-bottom: 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.service-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.service-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-normal);
+    padding: 45px 30px;
+    text-align: left;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.card-icon {
+    margin-bottom: 45px;
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 15px;
+}
+
+.card-description {
+    color: var(--text-primary);
+    font-size: 1rem;
+    line-height: 1.5;
+    max-width: 750px;
+    margin: 0 auto;
+    word-break: keep-all;
+    text-align: left;
+}
+
+.text-description {
+    color: var(--text-primary);
+    font-size: 1rem;
+    line-height: 1.5;
+    max-width: 750px;
+    margin: 0 auto;
+    word-break: keep-all;
+    text-align: center;
+    padding-bottom: 15px;
+}
+
+.text-description2{
+    max-width: 650px;
+    margin: 0 auto;
+    word-break: keep-all;
+    text-align: center;
+    padding-bottom: 15px;
+}
+
+.text-description3{
+    max-width: 550px;
+    margin: 0 auto;
+    word-break: keep-all;
+    text-align: center;
+}
+
+.card-button {
+    background: var(--primary-color);
+    color: var(--bg-primary);
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--border-radius-small);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+/* 상담 대상자 섹션 */
+.target-users {
+    margin-bottom: 60px;
+}
+
+.target-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.target-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-normal);
+    padding: 40px 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.target-icon {
+    margin-bottom: 20px;
+}
+
+.target-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 15px;
+}
+
+.target-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+/* CTA 섹션 */
+.cta-section {
+    background: linear-gradient(135deg, #0078FE 0%, #005cbf 100%);
+    padding: 80px 0;
+    text-align: center;
+    margin-top: 60px;
+}
+
+.cta-content {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.cta-subtitle {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 15px;
+    font-weight: 400;
+}
+
+.cta-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+/* index.html의 search-btn 스타일을 정확히 참고 */
+.cta-btn {
+    background: var(--bg-primary);
+    color: var(--primary-color);
+    border: none;
+    border-radius: 15px;
+    padding: 15px 34px;
+    font-size: 16px;
+    font-weight: 400;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: var(--box-shadow);
+    text-decoration: none;
+    min-width: 120px;
+}
+
+.cta-btn:hover {
+    background: var(--bg-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow);
+    opacity: 0.9;
+}
+
+.cta-btn.primary {
+    background: var(--bg-primary);
+    color: var(--primary-color);
+}
+
+.cta-btn.secondary {
+    background: transparent;
+    color: var(--bg-primary);
+    border: 1px solid var(--bg-primary);
+}
+
+.cta-btn.secondary:hover {
+    background: var(--bg-primary);
+    color: var(--primary-color);
+}
+
+.search-btn.primary {
+    background: white;
+    color: var(--primary-color);
+    border: 1px solid white;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.search-btn.primary:hover {
+    background: transparent;
+    color: white;
+    border-color: white;
+}
+
+.search-btn.secondary {
+    background: transparent;
+    color: white;
+    border: 1px solid white;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.search-btn.secondary:hover {
+    background: white;
+    color: var(--primary-color);
+}
+
+/* 추가 정보 */
+.additional-info {
+    margin-top: 40px;
+}
+
+.additional-info h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+}
+
+.info-links {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.info-link {
+    display: block;
+    text-decoration: none;
+    color: var(--text-secondary);
+    padding: 15px 20px;
+    border-radius: var(--border-radius-small);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    text-align: center;
+    min-width: 250px;
+}
